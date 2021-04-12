@@ -1,9 +1,124 @@
 
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_vision/flutter_mobile_vision.dart';
+import 'package:camera/camera.dart';
+import 'package:path_provider/path_provider.dart';
 
+List<CameraDescription> cameras;
+
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  CameraController _controller;
+  bool _isReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupCameras();
+  }
+
+  Future<void> _setupCameras() async {
+    try {
+      // initialize cameras.
+      cameras = await availableCameras();
+      // initialize camera controllers.
+      _controller = new CameraController(cameras[0], ResolutionPreset.medium);
+      await _controller.initialize();
+    } on CameraException catch (_) {
+      // do something on error.
+    }
+    if (!mounted) return;
+    setState(() {
+      _isReady = true;
+    });
+  }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _takePicturePressed() {
+    _takePicture().then((String filePath) {
+      if (mounted) {
+         }
+    });
+  }
+
+  String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
+
+  Future<String> _takePicture() async {
+    if (!_isReady) {
+     // print("Controller is not initialized");
+      return null;
+    }
+
+    final Directory extDir = await getApplicationDocumentsDirectory();
+    final String photoDir = '${extDir.path}/Photos/image_test';
+    await Directory(photoDir).create(recursive: true);
+    final String filePath = '$photoDir/${timestamp()}.jpg';
+
+    if (_controller.value.isTakingPicture) {
+      print("Currently already taking a picture");
+      return null;
+    }
+
+    try {
+      await _controller.takePicture();
+    } on CameraException catch (e) {
+      print("camera exception occured: $e");
+      return null;
+    }
+
+    return filePath;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_controller.value.isInitialized) {
+      return Container();
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("TOTO SCANNER"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: CameraPreview(_controller),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(
+                child: RaisedButton.icon(
+                  icon: Icon(Icons.camera),
+                  label: Text("Take Picture"),
+                  onPressed: _takePicturePressed,
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class OCRPage extends StatefulWidget {
   @override

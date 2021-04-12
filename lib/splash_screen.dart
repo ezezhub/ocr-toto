@@ -23,8 +23,9 @@ class VideoState extends State<Splash> with SingleTickerProviderStateMixin{
   }
 
   void navigationPage() {
+
     Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => OCRPage()));
+        MaterialPageRoute(builder: (context) => MyHomePage()));
   }
 
   @override
