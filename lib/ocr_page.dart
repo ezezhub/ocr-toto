@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -100,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
+              aspectRatio: 16 / 9,
               child: CameraPreview(_controller),
             ),
             Padding(
