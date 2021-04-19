@@ -1,8 +1,11 @@
-#Thu Apr 15 17:36:05 SGT 2021
+#Mon Apr 19 00:36:36 SGT 2021
 path.4=classes_2.dex
 path.3=classes_1.dex
 path.2=classes_0.dex
 path.1=classes.dex
+path.7=classes_5.dex
+path.6=classes_4.dex
+path.5=classes_3.dex
 path.0=classes.dex
 base.4=D\:\\Development\\Flutterproject\\ocr-toto\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\out\\classes_2.dex
 base.3=D\:\\Development\\Flutterproject\\ocr-toto\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\out\\classes_1.dex
@@ -13,4 +16,10 @@ renamed.3=classes4.dex
 renamed.2=classes3.dex
 renamed.1=classes2.dex
 renamed.0=classes.dex
+renamed.7=classes8.dex
+renamed.6=classes7.dex
+base.7=D\:\\Development\\Flutterproject\\ocr-toto\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\out\\classes_5.dex
+renamed.5=classes6.dex
+base.6=D\:\\Development\\Flutterproject\\ocr-toto\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\out\\classes_4.dex
 renamed.4=classes5.dex
+base.5=D\:\\Development\\Flutterproject\\ocr-toto\\build\\app\\intermediates\\dex\\debug\\mergeLibDexDebug\\out\\classes_3.dex
