@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_cropper/image_cropper.dart';
 
+import 'main.dart';
 
 // A screen that allows users to take a picture using a given camera.
 class TakePictureScreen extends StatefulWidget {
   final CameraDescription camera;
+  final String pin;
 
   const TakePictureScreen({
     Key key,
     @required this.camera,
+    @required this.pin,
   }) : super(key: key);
 
   @override
@@ -23,6 +26,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   CameraController _controller;
   Future<void> _initializeControllerFuture;
   var result = "";
+  List<TextSpan> resultTextSpan = [];
+
   @override
   void initState() {
     super.initState();
@@ -42,13 +47,26 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   recogniseText(_userImageFile) async {
     FirebaseVisionImage myImage = FirebaseVisionImage.fromFile(_userImageFile);
     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
+
     VisionText readText = await recognizeText.processImage(myImage);
     result = "";
+    String winningNumber = widget.pin;
     for (TextBlock block in readText.blocks) {
       for (TextLine line in block.lines) {
+        var lineArray = (line.text + '\n').split(" ");
+        lineArray.forEach((element) {
+          if (winningNumber.contains(element)) {
+            resultTextSpan.add(new TextSpan(
+                text: element + " ",
+                style: TextStyle(color: Colors.red, fontSize: 45)));
+          } else {
+            resultTextSpan.add(new TextSpan(
+                text: element + " ",
+                style: TextStyle(color: Colors.white, fontSize: 45)));
+          }
+        });
         setState(() {
           result = result + ' ' + line.text + '\n';
-
         });
       }
     }
@@ -61,10 +79,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           // the DisplayPictureScreen widget.
           //imagePath: image?.path,
           imagePath: result,
+          pin: widget.pin,
+          resultTextSpan: resultTextSpan,
         ),
       ),
     );
-
   }
 
   @override
@@ -118,7 +137,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             // Attempt to take a picture and get the file `image`
             // where it was saved.
             final image = await _controller.takePicture();
-           // File imageFile = File(image.path);
+            // File imageFile = File(image.path);
             File croppedFile = await ImageCropper.cropImage(
                 sourcePath: image.path,
                 aspectRatioPresets: [
@@ -132,15 +151,14 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     toolbarTitle: 'Cropper',
                     toolbarColor: Colors.deepOrange,
                     toolbarWidgetColor: Colors.white,
-                    initAspectRatio: CropAspectRatioPreset.original,
+                    initAspectRatio: CropAspectRatioPreset.ratio16x9,
                     lockAspectRatio: false),
                 iosUiSettings: IOSUiSettings(
                   minimumAspectRatio: 1.0,
-                )
-            );
+                ));
             recogniseText(croppedFile);
 
-    // If the picture was taken, display it on a new screen.
+            // If the picture was taken, display it on a new screen.
 
           } catch (e) {
             // If an error occurs, log the error to the console.
@@ -162,22 +180,46 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 // A widget that displays the picture taken by the user.
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
+  final List<TextSpan> resultTextSpan;
+  final String pin;
 
-  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
+  const DisplayPictureScreen(
+      {Key key, this.imagePath, this.pin, this.resultTextSpan})
+      : super(key: key);
+
+  bool toggle(bool value) {
+    // returns the opposite
+    return !value;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Display the Picture')),
+      appBar: AppBar(title: Text('Display Result')),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Text(imagePath),
+      body: Center(
+          child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(children: resultTextSpan),
+      )),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final cameras = await availableCameras();
+          // Get a specific camera from the list of available cameras.
+          final firstCamera = cameras.first;
+
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => NumberScreen(camera: firstCamera)),
+              ModalRoute.withName("/Home"));
+        },
+        child: Icon(Icons.arrow_back),
+        backgroundColor: Colors.cyan,
+      ),
       //body: Image.file(File(imagePath)),
     );
   }
 }
-
-
 
 Widget cameraOverlay({double padding, double aspectRatio, Color color}) {
   return LayoutBuilder(builder: (context, constraints) {
@@ -188,33 +230,33 @@ Widget cameraOverlay({double padding, double aspectRatio, Color color}) {
     if (parentAspectRatio < aspectRatio) {
       horizontalPadding = padding;
       verticalPadding = (constraints.maxHeight -
-          ((constraints.maxWidth - 2 * padding) / aspectRatio)) /
-          2 ;
+              ((constraints.maxWidth - 2 * padding) / aspectRatio)) /
+          2;
     } else {
       verticalPadding = padding;
       horizontalPadding = ((constraints.maxWidth -
-          ((constraints.maxHeight - 2 * padding) * aspectRatio)) /
-          2) ;
+              ((constraints.maxHeight - 2 * padding) * aspectRatio)) /
+          2);
     }
     return Stack(fit: StackFit.expand, children: [
       Align(
           alignment: Alignment.centerLeft,
-          child: Container(width: horizontalPadding , color: color)),
+          child: Container(width: horizontalPadding, color: color)),
       Align(
           alignment: Alignment.centerRight,
-          child: Container(width: horizontalPadding , color: color)),
+          child: Container(width: horizontalPadding, color: color)),
       Align(
           alignment: Alignment.topCenter,
           child: Container(
               margin: EdgeInsets.only(
-                  left: horizontalPadding , right: horizontalPadding),
+                  left: horizontalPadding, right: horizontalPadding),
               height: verticalPadding + 50,
               color: color)),
       Align(
           alignment: Alignment.bottomCenter,
           child: Container(
               margin: EdgeInsets.only(
-                  left: horizontalPadding , right: horizontalPadding),
+                  left: horizontalPadding, right: horizontalPadding),
               height: verticalPadding + 50,
               color: color)),
       Container(
@@ -222,8 +264,6 @@ Widget cameraOverlay({double padding, double aspectRatio, Color color}) {
             horizontal: horizontalPadding, vertical: verticalPadding + 50),
         decoration: BoxDecoration(border: Border.all(color: Colors.cyan)),
       ),
-
     ]);
   });
 }
-

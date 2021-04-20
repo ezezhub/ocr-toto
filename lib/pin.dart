@@ -152,14 +152,14 @@ class PinEntryTextFieldState extends State<PinEntryTextField> {
                 FocusScope.of(context).requestFocus(_focusNodes[i - 1]);
               }
             }
-            if (_pin.every((String digit) => digit != null && digit != '')) {
-              widget.onSubmit(_pin.join());
-            }
+           /* if (_pin.every((String digit) => digit != null && digit != '')) {
+              widget.onSubmit(_pin.join(","));
+            }*/
 
         },
         onSubmitted: (String str) {
           if (_pin.every((String digit) => digit != null && digit != '')) {
-            widget.onSubmit(_pin.join());
+            widget.onSubmit(_pin.join(","));
           }
         },
       ),

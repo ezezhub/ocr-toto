@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ocr/pin.dart';
-import 'package:flutter_ocr/cam.dart';
+import 'package:ej_flutter_vision/pin.dart';
+import 'package:ej_flutter_vision/cam.dart';
 
 Future<void> main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -83,17 +83,9 @@ class NumberScreenState extends State<NumberScreen> {
                     MaterialPageRoute(builder: (context) => TakePictureScreen(
                         // Pass the appropriate camera to the TakePictureScreen widget.
                             camera: widget.camera,
+                            pin: pin,
                           ),
                     ));
-               /* showDialog(
-                    context: context,
-                    builder: (context){
-                      return AlertDialog(
-                        title: Text("Pin"),
-                        content: Text('Pin entered is $pin'),
-                      );
-                    }
-                );*/ //end showDialog()
               }, // end onSubmit
             ), // end PinEntryTextField()
           ), // end Padding()
