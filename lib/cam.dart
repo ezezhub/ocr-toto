@@ -211,11 +211,6 @@ class DisplayPictureScreen extends StatelessWidget {
       {Key key, this.imagePath, this.pin, this.resultTextSpan})
       : super(key: key);
 
-  bool toggle(bool value) {
-    // returns the opposite
-    return !value;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -227,19 +222,35 @@ class DisplayPictureScreen extends StatelessWidget {
         textAlign: TextAlign.center,
         text: TextSpan(children: resultTextSpan),
       )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final cameras = await availableCameras();
-          // Get a specific camera from the list of available cameras.
-          final firstCamera = cameras.first;
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              FloatingActionButton(
+                onPressed: () {
+                  widget
+                  Navigator.pop(context);
+                },
+                child: Icon(Icons.navigate_before),
+              ),
+              FloatingActionButton(
+                onPressed: () async {
+                  final cameras = await availableCameras();
+                  // Get a specific camera from the list of available cameras.
+                  final firstCamera = cameras.first;
 
-          Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => NumberScreen(camera: firstCamera)),
-              ModalRoute.withName("/Home"));
-        },
-        child: Icon(Icons.arrow_back),
-        backgroundColor: Colors.cyan,
-      ),
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => NumberScreen(camera: firstCamera)),
+                      ModalRoute.withName("/Home"));
+                },
+                child: Icon(Icons.home),
+              )
+            ],
+          ),
+        ),
+
       //body: Image.file(File(imagePath)),
     );
   }
