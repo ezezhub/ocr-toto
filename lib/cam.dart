@@ -4,6 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image/image.dart' as VImage;
+import 'package:path_provider/path_provider.dart';
 
 import 'main.dart';
 
@@ -45,7 +47,15 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   recogniseText(_userImageFile) async {
-    FirebaseVisionImage myImage = FirebaseVisionImage.fromFile(_userImageFile);
+
+    VImage.Image image = VImage.decodeImage(_userImageFile.readAsBytesSync());
+    VImage.grayscale(image);
+    // Assuming the source image is a PNG image
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+    File imgFile = await File(tempPath + '/tempimage.png').create(recursive: true);
+    imgFile.writeAsBytesSync(VImage.encodePng(image));
+    FirebaseVisionImage myImage = FirebaseVisionImage.fromFile(imgFile);
     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
 
     VisionText readText = await recognizeText.processImage(myImage);
@@ -53,16 +63,28 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     String winningNumber = widget.pin;
     for (TextBlock block in readText.blocks) {
       for (TextLine line in block.lines) {
-        var lineArray = (line.text + '\n').split(" ");
+        var lineArray = (line.text).split(" ");
         lineArray.forEach((element) {
-          if (winningNumber.contains(element)) {
-            resultTextSpan.add(new TextSpan(
-                text: element + " ",
-                style: TextStyle(color: Colors.red, fontSize: 45)));
+          if (winningNumber.contains(element)){
+            if(lineArray.last == element){
+              resultTextSpan.add(new TextSpan(
+                  text: element + "\n",
+                  style: TextStyle(color: Colors.red, fontSize: 45)));
+            }else{
+              resultTextSpan.add(new TextSpan(
+                  text: element + " ",
+                  style: TextStyle(color: Colors.red, fontSize: 45)));
+            }
           } else {
-            resultTextSpan.add(new TextSpan(
-                text: element + " ",
-                style: TextStyle(color: Colors.white, fontSize: 45)));
+            if(lineArray.last == element){
+              resultTextSpan.add(new TextSpan(
+                  text: element + "\n",
+                  style: TextStyle(color: Colors.white, fontSize: 45)));
+            }else{
+              resultTextSpan.add(new TextSpan(
+                  text: element + " ",
+                  style: TextStyle(color: Colors.white, fontSize: 45)));
+            }
           }
         });
         setState(() {
@@ -156,7 +178,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 iosUiSettings: IOSUiSettings(
                   minimumAspectRatio: 1.0,
                 ));
-            recogniseText(croppedFile);
+
+
+            recogniseText((croppedFile));
 
             // If the picture was taken, display it on a new screen.
 
@@ -221,49 +245,3 @@ class DisplayPictureScreen extends StatelessWidget {
   }
 }
 
-Widget cameraOverlay({double padding, double aspectRatio, Color color}) {
-  return LayoutBuilder(builder: (context, constraints) {
-    double parentAspectRatio = constraints.maxWidth / constraints.maxHeight;
-    double horizontalPadding;
-    double verticalPadding;
-
-    if (parentAspectRatio < aspectRatio) {
-      horizontalPadding = padding;
-      verticalPadding = (constraints.maxHeight -
-              ((constraints.maxWidth - 2 * padding) / aspectRatio)) /
-          2;
-    } else {
-      verticalPadding = padding;
-      horizontalPadding = ((constraints.maxWidth -
-              ((constraints.maxHeight - 2 * padding) * aspectRatio)) /
-          2);
-    }
-    return Stack(fit: StackFit.expand, children: [
-      Align(
-          alignment: Alignment.centerLeft,
-          child: Container(width: horizontalPadding, color: color)),
-      Align(
-          alignment: Alignment.centerRight,
-          child: Container(width: horizontalPadding, color: color)),
-      Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-              margin: EdgeInsets.only(
-                  left: horizontalPadding, right: horizontalPadding),
-              height: verticalPadding + 50,
-              color: color)),
-      Align(
-          alignment: Alignment.bottomCenter,
-          child: Container(
-              margin: EdgeInsets.only(
-                  left: horizontalPadding, right: horizontalPadding),
-              height: verticalPadding + 50,
-              color: color)),
-      Container(
-        margin: EdgeInsets.symmetric(
-            horizontal: horizontalPadding, vertical: verticalPadding + 50),
-        decoration: BoxDecoration(border: Border.all(color: Colors.cyan)),
-      ),
-    ]);
-  });
-}
