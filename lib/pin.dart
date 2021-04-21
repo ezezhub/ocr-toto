@@ -147,8 +147,8 @@ class PinEntryTextFieldState extends State<PinEntryTextField> {
                 FocusScope.of(context).requestFocus(_focusNodes[i + 1]);
               }
             } else {
-              _focusNodes[i].unfocus();
               if (lastDigit != null && _pin[i].length == 0) {
+                _focusNodes[i].unfocus();
                 FocusScope.of(context).requestFocus(_focusNodes[i - 1]);
               }
             }

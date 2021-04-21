@@ -60,46 +60,50 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
     VisionText readText = await recognizeText.processImage(myImage);
     result = "";
+    resultTextSpan = [];
     String winningNumber = widget.pin;
     for (TextBlock block in readText.blocks) {
       for (TextLine line in block.lines) {
         var lineArray = (line.text).split(" ");
         lineArray.forEach((element) {
-          if (winningNumber.contains(element)){
-            if(lineArray.last == element){
-              resultTextSpan.add(new TextSpan(
-                  text: element + "\n",
-                  style: TextStyle(color: Colors.red, fontSize: 45)));
-            }else{
-              resultTextSpan.add(new TextSpan(
-                  text: element + " ",
-                  style: TextStyle(color: Colors.red, fontSize: 45)));
-            }
-          } else {
-            if(lineArray.last == element){
-              resultTextSpan.add(new TextSpan(
-                  text: element + "\n",
-                  style: TextStyle(color: Colors.white, fontSize: 45)));
-            }else{
-              resultTextSpan.add(new TextSpan(
-                  text: element + " ",
-                  style: TextStyle(color: Colors.white, fontSize: 45)));
+          bool hasLetters = (element).contains(new RegExp(r'[A-Z]'));
+          if(!hasLetters){
+            if (winningNumber.contains(element)){
+              if(lineArray.last == element){
+                resultTextSpan.add(new TextSpan(
+                    text: element + "\n",
+                    style: TextStyle(color: Colors.red, fontSize: 45)));
+              }else{
+                resultTextSpan.add(new TextSpan(
+                    text: element + " ",
+                    style: TextStyle(color: Colors.red, fontSize: 45)));
+              }
+            } else {
+              if(lineArray.last == element){
+                resultTextSpan.add(new TextSpan(
+                    text: element + "\n",
+                    style: TextStyle(color: Colors.white, fontSize: 45)));
+              }else{
+                resultTextSpan.add(new TextSpan(
+                    text: element + " ",
+                    style: TextStyle(color: Colors.white, fontSize: 45)));
+              }
             }
           }
+
         });
-        setState(() {
+      /*  setState(() {
           result = result + ' ' + line.text + '\n';
-        });
+        });*/
       }
     }
     debugPrint(result);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DisplayPictureScreen(
+        builder: (context) => new DisplayPictureScreen(
           // Pass the automatically generated path to
           // the DisplayPictureScreen widget.
-          //imagePath: image?.path,
           imagePath: result,
           pin: widget.pin,
           resultTextSpan: resultTextSpan,
@@ -125,16 +129,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               alignment: FractionalOffset.center,
               children: <Widget>[
                 CameraPreview(_controller),
-                /*new Positioned.fill(
-                    child: new AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: Stack(fit: StackFit.expand, children: [
-                          CameraPreview(_controller),
-                          cameraOverlay(
-                              padding: 40,
-                              aspectRatio: 1,
-                              color: Color(0xF0000000))
-                        ]))),*/
               ],
             );
           } else {
@@ -229,13 +223,14 @@ class DisplayPictureScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               FloatingActionButton(
+                heroTag: "back",
                 onPressed: () {
-                  widget
                   Navigator.pop(context);
                 },
                 child: Icon(Icons.navigate_before),
               ),
               FloatingActionButton(
+                heroTag: "home",
                 onPressed: () async {
                   final cameras = await availableCameras();
                   // Get a specific camera from the list of available cameras.
